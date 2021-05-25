@@ -200,10 +200,17 @@ void error_callback(int error, const char* description) {
 	fputs(description, stderr);
 }
 
+float tank_speed = 0;
+float max_tank_speed = 2;
+float wheel_radius = 0.27;
+float wheel_speed = 0;
+float max_wheel_speed = max_tank_speed / wheel_radius; //omega = v/r
+float gear_radius = 0.34;
+float gear_speed = 0;
+float max_gear_speed = max_tank_speed / gear_radius; //omega = v/r
 float tank_turn_speed = 0;
 float turret_speed_x = 0;
 float turret_speed_y = 0;
-float wheel_speed = 0;
 
 float speed_x = 0;
 float speed_y = 0;
@@ -224,19 +231,23 @@ void keyCallback(GLFWwindow* window,int key,int scancode,int action,int mods) {
 	if (action==GLFW_PRESS) {
         if (key==GLFW_KEY_D) tank_turn_speed =-PI/3;
         if (key==GLFW_KEY_A) tank_turn_speed =PI/3;
-		if (key == GLFW_KEY_W) wheel_speed = PI / 3;
-		if (key == GLFW_KEY_S) wheel_speed = -PI / 3;
+		if (key == GLFW_KEY_W) { wheel_speed = max_wheel_speed; gear_speed = max_gear_speed; tank_speed = max_tank_speed; }
+		if (key == GLFW_KEY_S) { wheel_speed = -max_wheel_speed; gear_speed = -max_gear_speed; tank_speed = -max_tank_speed; }
 		if (key==GLFW_KEY_LEFT) turret_speed_x = PI / 3;
 		if (key==GLFW_KEY_RIGHT) turret_speed_x = -PI / 3;
         if (key==GLFW_KEY_UP) turret_speed_y=-PI/4;
         if (key==GLFW_KEY_DOWN) turret_speed_y=PI/4;
-		if (key == GLFW_KEY_SPACE) PlaySound(TEXT("sounds/tank shot.wav"), NULL, SND_ASYNC);
+		if (key == GLFW_KEY_SPACE) {
+			//mciSendString(TEXT("close sounds/tank_shot.wav"), NULL, 0, 0);
+			//mciSendString(TEXT("open sounds/tank_shot.wav"), NULL, 0, 0);
+			mciSendString(TEXT("play sounds/tank_shot.wav"), NULL, 0, 0);//PlaySound(TEXT("sounds/tank shot.wav"), NULL, SND_ASYNC);
+		}
     }
 	if (action == GLFW_RELEASE) {
 		if (key == GLFW_KEY_D) tank_turn_speed = 0;
 		if (key == GLFW_KEY_A) tank_turn_speed = 0;
-		if (key == GLFW_KEY_W) wheel_speed = 0;
-		if (key == GLFW_KEY_S) wheel_speed = 0;
+		if (key == GLFW_KEY_W) { wheel_speed = 0; gear_speed = 0; tank_speed = 0; }
+		if (key == GLFW_KEY_S) { wheel_speed = 0; gear_speed = 0; tank_speed = 0; }
 		if (key == GLFW_KEY_LEFT) turret_speed_x = 0;
 		if (key == GLFW_KEY_RIGHT) turret_speed_x = 0;
 		if (key == GLFW_KEY_UP) turret_speed_y = 0;
@@ -267,11 +278,10 @@ void initOpenGLProgram(GLFWwindow* window) {
 	loadOBJ("models/Gears_Both.obj", 4);
 	loadOBJ("models/Turret.obj", 5);
 	loadOBJ("models/Gun.obj", 6);
-
 	//tex0 = readTexture("metal.png");
 	//tex1 = readTexture("sky.png");
 
-	//PlaySound(TEXT("sounds/Battlefield 1942 soundtrack.wav"), NULL, SND_ASYNC);
+	PlaySound(TEXT("sounds/Battlefield 1942 soundtrack.wav"), NULL, SND_ASYNC);
 }
 
 
@@ -282,19 +292,17 @@ void freeOpenGLProgram(GLFWwindow* window) {
 	glDeleteTextures(1, &tex1);
 	deletePtrs();
 	delete sp;
+	
 }
 
 
 //Procedura rysująca zawartość sceny
-void drawScene(GLFWwindow* window,float tank_turn_angle,float angle_x, float angle_y, float wheel_angle, float turret_angle_x, float turret_angle_y) {
+void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_y, float wheel_angle, float gear_angle, float turret_angle_x, float turret_angle_y) {
 	//************Tutaj umieszczaj kod rysujący obraz******************l
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
     glm::mat4 P=glm::perspective(50.0f*PI/180.0f, aspectRatio, 0.01f, 50.0f); //Wylicz macierz rzutowania
-
-    glm::mat4 center=glm::mat4(1.0f);
-	center = glm::rotate(center, tank_turn_angle,glm::vec3(0.0f,1.0f,0.0f)); //Wylicz macierz modelu
 	//center = glm::rotate(center, angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 	//center = glm::rotate(center, angle_x, glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz modelu
 
@@ -381,7 +389,7 @@ void drawScene(GLFWwindow* window,float tank_turn_angle,float angle_x, float ang
 
 	//Gears
 	glm::mat4 gears = glm::translate(center, glm::vec3(0.0f, 0.6f, -2.68f));
-	gears = glm::rotate(gears, wheel_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
+	gears = glm::rotate(gears, gear_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(gears));
 	glEnableVertexAttribArray(sp->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[4]); //Wskaż tablicę z danymi dla atrybutu vertex
@@ -403,7 +411,7 @@ void drawScene(GLFWwindow* window,float tank_turn_angle,float angle_x, float ang
 		glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
 	/*glm::mat4 V = glm::lookAt(
 		glm::vec3(cam[3][0],cam[3][1],cam[3][2]), //kamera za wieżyczką
-		glm::vec3(0, 0, 0),
+		glm::vec3(center[3][0], center[3][1], center[3][2]),
 		glm::vec3(0.0f, 1.0f, 0.0f));*/
 	turret = glm::rotate(turret, turret_angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(turret));
@@ -472,29 +480,35 @@ int main(void)
 	initOpenGLProgram(window); //Operacje inicjujące
 
 	//Główna pętla
-	float tank_turn_angle=0; //Aktualny kąt obrotu czołgu
+	glm::mat4 center = glm::mat4(1.0f);
 	float turret_angle_x=0; //Aktualny kąt obrotu wieżyczki
 	float turret_angle_y=0; //Aktualny kąt obrotu wieżyczki
 	float wheel_angle=0; //Aktualny kąt obrotu kół
+	float gear_angle = 0; //Aktualny kąt obrotu zębatki
 
 	float angle_x = 0; //Aktualny kąt obrotu wieżyczki
 	float angle_y = 0; //Aktualny kąt obrotu wieżyczki
+
 	glfwSetTime(0); //Zeruj timer
 	while (!glfwWindowShouldClose(window)) //Tak długo jak okno nie powinno zostać zamknięte
 	{
-        tank_turn_angle+= tank_turn_speed *glfwGetTime(); //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
-		turret_angle_x += turret_speed_x * glfwGetTime(); //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
-        turret_angle_y+=turret_speed_y*glfwGetTime(); //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
-		wheel_angle += wheel_speed * glfwGetTime();
+		float time_now = glfwGetTime();
+		turret_angle_x += turret_speed_x * time_now; //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
+        turret_angle_y+=turret_speed_y * time_now; //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
+		wheel_angle += wheel_speed * time_now;
+		gear_angle += gear_speed * time_now;
 
-		angle_x += speed_x * glfwGetTime(); //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
-		angle_y += speed_y * glfwGetTime();
+		center = glm::rotate(center, tank_turn_speed * time_now, glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz modelu
+		center = glm::translate(center, glm::vec3(0.0f, 0.0f, tank_speed * time_now));
+		//angle_x += speed_x * time_now; //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
+		//angle_y += speed_y * time_now;
 		if (turret_angle_y < -0.2)
 			turret_angle_y = -0.2;
 		else if (turret_angle_y > 0.1)
 			turret_angle_y = 0.1;
+		
         glfwSetTime(0); //Zeruj timer
-		drawScene(window, tank_turn_angle, angle_x, angle_y, wheel_angle, turret_angle_x, turret_angle_y); //Wykonaj procedurę rysującą
+		drawScene(window, center, angle_x, angle_y, wheel_angle, gear_angle, turret_angle_x, turret_angle_y); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
 	}
 
