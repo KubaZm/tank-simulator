@@ -281,7 +281,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 	//tex0 = readTexture("metal.png");
 	//tex1 = readTexture("sky.png");
 
-	PlaySound(TEXT("sounds/Battlefield 1942 soundtrack.wav"), NULL, SND_ASYNC);
+	//PlaySound(TEXT("sounds/Battlefield 1942 soundtrack.wav"), NULL, SND_ASYNC);
 }
 
 
@@ -413,7 +413,7 @@ void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_
 		glm::vec3(cam[3][0],cam[3][1],cam[3][2]), //kamera za wieżyczką
 		glm::vec3(center[3][0], center[3][1], center[3][2]),
 		glm::vec3(0.0f, 1.0f, 0.0f));*/
-	turret = glm::rotate(turret, turret_angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
+	//turret = glm::rotate(turret, turret_angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(turret));
 	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
 
@@ -429,6 +429,11 @@ void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[5]); //Narysuj obiekt
 
 	//Gun
+	glm::mat4 gun = glm::translate(turret, glm::vec3(0.0f, 1.81f, 2.13f));
+	gun = glm::rotate(gun, turret_angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
+
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(gun));
+
 	glEnableVertexAttribArray(sp->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[6]); //Wskaż tablicę z danymi dla atrybutu vertex
 
