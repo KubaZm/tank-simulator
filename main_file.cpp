@@ -201,7 +201,7 @@ void error_callback(int error, const char* description) {
 }
 
 float tank_speed = 0;
-float max_tank_speed = 2;
+float max_tank_speed = 3;
 float wheel_radius = 0.27;
 float wheel_speed = 0;
 float max_wheel_speed = max_tank_speed / wheel_radius; //omega = v/r
@@ -211,6 +211,9 @@ float max_gear_speed = max_tank_speed / gear_radius; //omega = v/r
 float tank_turn_speed = 0;
 float turret_speed_x = 0;
 float turret_speed_y = 0;
+bool w_pressed = false;
+bool s_pressed = false;
+float tank_acceleration_ratio = 0.05;
 
 float speed_x = 0;
 float speed_y = 0;
@@ -231,8 +234,10 @@ void keyCallback(GLFWwindow* window,int key,int scancode,int action,int mods) {
 	if (action==GLFW_PRESS) {
         if (key==GLFW_KEY_D) tank_turn_speed =-PI/3;
         if (key==GLFW_KEY_A) tank_turn_speed =PI/3;
-		if (key == GLFW_KEY_W) { wheel_speed = max_wheel_speed; gear_speed = max_gear_speed; tank_speed = max_tank_speed; }
-		if (key == GLFW_KEY_S) { wheel_speed = -max_wheel_speed; gear_speed = -max_gear_speed; tank_speed = -max_tank_speed; }
+		//if (key == GLFW_KEY_W) { wheel_speed = max_wheel_speed; gear_speed = max_gear_speed; tank_speed = max_tank_speed; }
+		//if (key == GLFW_KEY_S) { wheel_speed = -max_wheel_speed; gear_speed = -max_gear_speed; tank_speed = -max_tank_speed; }
+		if (key == GLFW_KEY_W) { w_pressed = true; }
+		if (key == GLFW_KEY_S) { s_pressed = true; }
 		if (key==GLFW_KEY_LEFT) turret_speed_x = PI / 3;
 		if (key==GLFW_KEY_RIGHT) turret_speed_x = -PI / 3;
         if (key==GLFW_KEY_UP) turret_speed_y=-PI/4;
@@ -247,8 +252,10 @@ void keyCallback(GLFWwindow* window,int key,int scancode,int action,int mods) {
 	if (action == GLFW_RELEASE) {
 		if (key == GLFW_KEY_D) tank_turn_speed = 0;
 		if (key == GLFW_KEY_A) tank_turn_speed = 0;
-		if (key == GLFW_KEY_W) { wheel_speed = 0; gear_speed = 0; tank_speed = 0; }
-		if (key == GLFW_KEY_S) { wheel_speed = 0; gear_speed = 0; tank_speed = 0; }
+		//if (key == GLFW_KEY_W) { wheel_speed = 0; gear_speed = 0; tank_speed = 0; }
+		//if (key == GLFW_KEY_S) { wheel_speed = 0; gear_speed = 0; tank_speed = 0; }
+		if (key == GLFW_KEY_W) { w_pressed = false; }
+		if (key == GLFW_KEY_S) { s_pressed = false; }
 		if (key == GLFW_KEY_LEFT) turret_speed_x = 0;
 		if (key == GLFW_KEY_RIGHT) turret_speed_x = 0;
 		if (key == GLFW_KEY_UP) turret_speed_y = 0;
@@ -499,6 +506,75 @@ int main(void)
 	while (!glfwWindowShouldClose(window)) //Tak długo jak okno nie powinno zostać zamknięte
 	{
 		float time_now = glfwGetTime();
+
+		//przyspieszanie i zwalnianie czołgu
+		if (w_pressed)
+		{
+			if (s_pressed)
+			{
+				if (tank_speed > 0)
+				{
+					tank_speed -= 2*tank_acceleration_ratio;
+					if (tank_speed < 0)
+						tank_speed = 0;
+				}
+				else if (tank_speed < 0)
+				{
+					tank_speed += 2*tank_acceleration_ratio;
+					if (tank_speed > 0)
+						tank_speed = 0;
+				}
+			}
+			else if (tank_speed < 0)
+			{
+				tank_speed += 2*tank_acceleration_ratio;
+				if (tank_speed > max_tank_speed)
+					tank_speed = max_tank_speed;
+			}
+			else if (tank_speed < max_tank_speed)
+			{
+				tank_speed += tank_acceleration_ratio;
+				if (tank_speed > max_tank_speed)
+					tank_speed = max_tank_speed;
+			}
+		}
+		else 
+		{
+			if (s_pressed)
+			{
+				if (tank_speed > 0)
+				{
+					tank_speed -= 2*tank_acceleration_ratio;
+					if (tank_speed < -max_tank_speed)
+						tank_speed = -max_tank_speed;
+				}
+				else if (tank_speed > -max_tank_speed)
+				{
+					tank_speed -= tank_acceleration_ratio;
+					if (tank_speed < -max_tank_speed)
+						tank_speed = -max_tank_speed;
+				}
+			}
+			else
+			{
+				if (tank_speed < 0)
+				{
+					tank_speed += tank_acceleration_ratio;
+					if (tank_speed > 0)
+						tank_speed = 0;
+				}
+				else if (tank_speed > 0)
+				{
+					tank_speed -= tank_acceleration_ratio;
+					if (tank_speed < 0)
+						tank_speed = 0;
+				}
+			}
+		}
+		
+		wheel_speed = tank_speed / wheel_radius;
+		gear_speed = tank_speed / gear_radius;
+
 		turret_angle_x += turret_speed_x * time_now; //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
         turret_angle_y+=turret_speed_y * time_now; //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
 		wheel_angle += wheel_speed * time_now;

@@ -4,8 +4,9 @@ C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\proje
 C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(165,20): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
 C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(205,26): warning C4305: "inicjowanie": obcięcie z "double" do "float"
 C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(208,25): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(374,63): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(501,18): warning C4244: "inicjowanie": konwersja z "double" do "float", możliwa utrata danych
-C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(512,26): warning C4305: "=": obcięcie z "double" do "float"
-C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(514,26): warning C4305: "=": obcięcie z "double" do "float"
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(216,37): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(381,63): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(508,18): warning C4244: "inicjowanie": konwersja z "double" do "float", możliwa utrata danych
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(588,26): warning C4305: "=": obcięcie z "double" do "float"
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(590,26): warning C4305: "=": obcięcie z "double" do "float"
   tank-simulator.vcxproj -> C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\Debug\tank-simulator.exe
