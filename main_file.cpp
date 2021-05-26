@@ -240,7 +240,8 @@ void keyCallback(GLFWwindow* window,int key,int scancode,int action,int mods) {
 		if (key == GLFW_KEY_SPACE) {
 			//mciSendString(TEXT("close sounds/tank_shot.wav"), NULL, 0, 0);
 			//mciSendString(TEXT("open sounds/tank_shot.wav"), NULL, 0, 0);
-			mciSendString(TEXT("play sounds/tank_shot.wav"), NULL, 0, 0);//PlaySound(TEXT("sounds/tank shot.wav"), NULL, SND_ASYNC);
+			//mciSendString(TEXT("play sounds/tank_shot.wav"), NULL, 0, 0);
+			PlaySound(TEXT("sounds/tank shot.wav"), NULL, SND_ASYNC);
 		}
     }
 	if (action == GLFW_RELEASE) {
@@ -507,10 +508,10 @@ int main(void)
 		center = glm::translate(center, glm::vec3(0.0f, 0.0f, tank_speed * time_now));
 		//angle_x += speed_x * time_now; //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
 		//angle_y += speed_y * time_now;
-		if (turret_angle_y < -0.2)
-			turret_angle_y = -0.2;
-		else if (turret_angle_y > 0.1)
-			turret_angle_y = 0.1;
+		if (turret_angle_y < -0.23)
+			turret_angle_y = -0.23;
+		else if (turret_angle_y > 0.145)
+			turret_angle_y = 0.145;
 		
         glfwSetTime(0); //Zeruj timer
 		drawScene(window, center, angle_x, angle_y, wheel_angle, gear_angle, turret_angle_x, turret_angle_y); //Wykonaj procedurę rysującą
