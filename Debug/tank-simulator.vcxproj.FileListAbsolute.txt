@@ -1,2 +1,3 @@
 C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\testowe repo\tank-simulator\Debug\tank-simulator.exe
 C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\Debug\tank-simulator.exe
+Y:\VSC\tank\tank-simulator\Debug\tank-simulator.exe
