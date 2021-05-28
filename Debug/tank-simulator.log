@@ -1,12 +1,12 @@
 ﻿  main_file.cpp
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: "APIENTRY": ponowna definicja makra
-Y:\VSC\tank\tank-simulator\glfw\include\GLFW\glfw3.h(123): message : zobacz poprzednią definicję „APIENTRY”
-Y:\VSC\tank\tank-simulator\main_file.cpp(165,20): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
-Y:\VSC\tank\tank-simulator\main_file.cpp(205,26): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-Y:\VSC\tank\tank-simulator\main_file.cpp(208,25): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-Y:\VSC\tank\tank-simulator\main_file.cpp(216,37): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-Y:\VSC\tank\tank-simulator\main_file.cpp(442,63): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-Y:\VSC\tank\tank-simulator\main_file.cpp(575,18): warning C4244: "inicjowanie": konwersja z "double" do "float", możliwa utrata danych
-Y:\VSC\tank\tank-simulator\main_file.cpp(655,26): warning C4305: "=": obcięcie z "double" do "float"
-Y:\VSC\tank\tank-simulator\main_file.cpp(657,26): warning C4305: "=": obcięcie z "double" do "float"
-  tank-simulator.vcxproj -> Y:\VSC\tank\tank-simulator\Debug\tank-simulator.exe
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\glfw\include\GLFW\glfw3.h(123): message : zobacz poprzednią definicję „APIENTRY”
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(165,20): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(205,26): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(208,25): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(219,37): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(478,63): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(611,18): warning C4244: "inicjowanie": konwersja z "double" do "float", możliwa utrata danych
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(691,26): warning C4305: "=": obcięcie z "double" do "float"
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(693,26): warning C4305: "=": obcięcie z "double" do "float"
+  tank-simulator.vcxproj -> C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\Debug\tank-simulator.exe

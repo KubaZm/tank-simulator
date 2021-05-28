@@ -209,51 +209,87 @@ float gear_radius = 0.34;
 float gear_speed = 0;
 float max_gear_speed = max_tank_speed / gear_radius; //omega = v/r
 float tank_turn_speed = 0;
+float max_tank_turn_speed = PI / 3;
 float turret_speed_x = 0;
 float turret_speed_y = 0;
 bool w_pressed = false;
 bool s_pressed = false;
+bool d_pressed = false;
+bool a_pressed = false;
 float tank_acceleration_ratio = 0.05;
 
 float speed_x = 0;
 float speed_y = 0;
 
-void keyCallback(GLFWwindow* window,int key,int scancode,int action,int mods) {
-	/*if (action == GLFW_PRESS) {
-		if (key == GLFW_KEY_LEFT) speed_x = -PI / 2;
-		if (key == GLFW_KEY_RIGHT) speed_x = PI / 2;
-		if (key == GLFW_KEY_UP) speed_y = PI / 2;
-		if (key == GLFW_KEY_DOWN) speed_y = -PI / 2;
-	}
-	if (action == GLFW_RELEASE) {
-		if (key == GLFW_KEY_LEFT) speed_x = 0;
-		if (key == GLFW_KEY_RIGHT) speed_x = 0;
-		if (key == GLFW_KEY_UP) speed_y = 0;
-		if (key == GLFW_KEY_DOWN) speed_y = 0;
-	}*/
-	if (action==GLFW_PRESS) {
-        if (key==GLFW_KEY_D) tank_turn_speed =-PI/3;
-        if (key==GLFW_KEY_A) tank_turn_speed =PI/3;
-		//if (key == GLFW_KEY_W) { wheel_speed = max_wheel_speed; gear_speed = max_gear_speed; tank_speed = max_tank_speed; }
-		//if (key == GLFW_KEY_S) { wheel_speed = -max_wheel_speed; gear_speed = -max_gear_speed; tank_speed = -max_tank_speed; }
-		if (key == GLFW_KEY_W) { w_pressed = true; }
-		if (key == GLFW_KEY_S) { s_pressed = true; }
-		if (key==GLFW_KEY_LEFT) turret_speed_x = PI / 3;
-		if (key==GLFW_KEY_RIGHT) turret_speed_x = -PI / 3;
-        if (key==GLFW_KEY_UP) turret_speed_y=-PI/4;
-        if (key==GLFW_KEY_DOWN) turret_speed_y=PI/4;
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	if (action == GLFW_PRESS) {
+		if (key == GLFW_KEY_D)
+		{
+			d_pressed = true;
+			if (a_pressed)
+				tank_turn_speed = 0;
+			else if (s_pressed && !w_pressed)
+				tank_turn_speed = max_tank_turn_speed;
+			else
+				tank_turn_speed = -max_tank_turn_speed;
+		}
+		if (key == GLFW_KEY_A)
+		{
+			a_pressed = true;
+			if (d_pressed)
+				tank_turn_speed = 0;
+			else if (s_pressed && !w_pressed)
+				tank_turn_speed = -max_tank_turn_speed;
+			else
+				tank_turn_speed = max_tank_turn_speed;
+		}
+		if (key == GLFW_KEY_W)
+		{
+			w_pressed = true;
+			if ((d_pressed && tank_turn_speed == max_tank_turn_speed) || (a_pressed && tank_turn_speed == -max_tank_turn_speed))
+				tank_turn_speed = -tank_turn_speed;
+		}
+		if (key == GLFW_KEY_S)
+		{
+			s_pressed = true;
+			if (!w_pressed)
+				tank_turn_speed = -tank_turn_speed;
+		}
+		if (key == GLFW_KEY_LEFT) turret_speed_x = PI / 3;
+		if (key == GLFW_KEY_RIGHT) turret_speed_x = -PI / 3;
+		if (key == GLFW_KEY_UP) turret_speed_y = -PI / 4;
+		if (key == GLFW_KEY_DOWN) turret_speed_y = PI / 4;
 		if (key == GLFW_KEY_SPACE) {
-			//mciSendString(TEXT("close sounds/tank_shot.wav"), NULL, 0, 0);
-			//mciSendString(TEXT("open sounds/tank_shot.wav"), NULL, 0, 0);
-			//mciSendString(TEXT("play sounds/tank_shot.wav"), NULL, 0, 0);
 			PlaySound(TEXT("sounds/tank shot.wav"), NULL, SND_ASYNC);
 		}
-    }
+	}
 	if (action == GLFW_RELEASE) {
-		if (key == GLFW_KEY_D) tank_turn_speed = 0;
-		if (key == GLFW_KEY_A) tank_turn_speed = 0;
-		//if (key == GLFW_KEY_W) { wheel_speed = 0; gear_speed = 0; tank_speed = 0; }
-		//if (key == GLFW_KEY_S) { wheel_speed = 0; gear_speed = 0; tank_speed = 0; }
+		if (key == GLFW_KEY_D)
+		{
+			d_pressed = false;
+			if (a_pressed)
+			{
+				if (!s_pressed)
+					tank_turn_speed = max_tank_turn_speed;
+				else
+					tank_turn_speed = -max_tank_turn_speed;
+			}
+			else
+				tank_turn_speed = 0;
+		}
+		if (key == GLFW_KEY_A)
+		{
+			a_pressed = false;
+			if (d_pressed)
+			{
+				if (!s_pressed)
+					tank_turn_speed = -max_tank_turn_speed;
+				else
+					tank_turn_speed = max_tank_turn_speed;
+			}
+			else
+				tank_turn_speed = 0;
+		}
 		if (key == GLFW_KEY_W) { w_pressed = false; }
 		if (key == GLFW_KEY_S) { s_pressed = false; }
 		if (key == GLFW_KEY_LEFT) turret_speed_x = 0;
