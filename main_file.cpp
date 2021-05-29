@@ -28,6 +28,45 @@ ShaderProgram *sp;
 GLuint texTank[4]; //Uchwyt – czołg
 GLuint texTrack[10]; //Uchwyt – gąsienice
 
+// zmienne globalne
+float tank_speed = 0;
+float max_tank_speed = 3;
+float wheel_radius = 0.27;
+float wheel_speed = 0;
+float max_wheel_speed = max_tank_speed / wheel_radius; //omega = v/r
+float gear_radius = 0.34;
+float gear_speed = 0;
+float max_gear_speed = max_tank_speed / gear_radius; //omega = v/r
+float tank_turn_speed = 0;
+float max_tank_turn_speed = PI / 3;
+float turret_speed_x = 0;
+float turret_speed_y = 0;
+bool w_pressed = false;
+bool s_pressed = false;
+bool d_pressed = false;
+bool a_pressed = false;
+float tank_acceleration_ratio = 0.05;
+unsigned int camera = 1;
+
+float speed_x = 0;
+float speed_y = 0;
+
+// tablice modelów
+static const int nr_of_models = 9;
+float* models_vertices[nr_of_models];
+float* models_normals[nr_of_models];
+float* models_texCoords[nr_of_models];
+float* models_colors[nr_of_models];
+int vertexCount[nr_of_models];
+
+
+
+
+
+
+
+
+
 //Funkcja wczytująca teksturę 
 GLuint readTexture(const char* filename) {
 	GLuint tex;
@@ -51,13 +90,6 @@ GLuint readTexture(const char* filename) {
 
 	return tex;
 }
-
-static const int nr_of_models = 8;
-float* models_vertices[nr_of_models];
-float* models_normals[nr_of_models];
-float* models_texCoords[nr_of_models];
-float* models_colors[nr_of_models];
-int vertexCount[nr_of_models];
 
 void loadOBJ(const char* file_name, int nr)
 {
@@ -200,31 +232,25 @@ void error_callback(int error, const char* description) {
 	fputs(description, stderr);
 }
 
-float tank_speed = 0;
-float max_tank_speed = 3;
-float wheel_radius = 0.27;
-float wheel_speed = 0;
-float max_wheel_speed = max_tank_speed / wheel_radius; //omega = v/r
-float gear_radius = 0.34;
-float gear_speed = 0;
-float max_gear_speed = max_tank_speed / gear_radius; //omega = v/r
-float tank_turn_speed = 0;
-float max_tank_turn_speed = PI / 3;
-float turret_speed_x = 0;
-float turret_speed_y = 0;
-bool w_pressed = false;
-bool s_pressed = false;
-bool d_pressed = false;
-bool a_pressed = false;
-float tank_acceleration_ratio = 0.05;
-
-float speed_x = 0;
-float speed_y = 0;
-
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (action == GLFW_PRESS) {
+		if (key == GLFW_KEY_1)
+			camera = 1;
+		else if (key == GLFW_KEY_2)
+			camera = 2;
+		else if (key == GLFW_KEY_3)
+			camera = 3;
+		else if (key == GLFW_KEY_4)
+			camera = 4;
+		else if (key == GLFW_KEY_5)
+			camera = 5;
+		else if (key == GLFW_KEY_6)
+			camera = 6;
+			
+
 		if (key == GLFW_KEY_D)
 		{
+			a_pressed = false;
 			d_pressed = true;
 			if (a_pressed)
 				tank_turn_speed = 0;
@@ -235,6 +261,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		if (key == GLFW_KEY_A)
 		{
+			d_pressed = false;
 			a_pressed = true;
 			if (d_pressed)
 				tank_turn_speed = 0;
@@ -269,6 +296,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			d_pressed = false;
 			if (a_pressed)
 			{
+				a_pressed = true;
 				if (!s_pressed)
 					tank_turn_speed = max_tank_turn_speed;
 				else
@@ -282,6 +310,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 			a_pressed = false;
 			if (d_pressed)
 			{
+				d_pressed = true;
 				if (!s_pressed)
 					tank_turn_speed = -max_tank_turn_speed;
 				else
@@ -319,10 +348,11 @@ void initOpenGLProgram(GLFWwindow* window) {
 	loadOBJ("models/Wheels_Both.obj",1);
 	loadOBJ("models/Track_Left.obj", 2);
 	loadOBJ("models/Track_Right.obj", 3);
-	loadOBJ("models/Single_Wheels_Both.obj", 4);
-	loadOBJ("models/Gears_Both.obj", 5);
-	loadOBJ("models/Turret.obj", 6);
-	loadOBJ("models/Gun.obj", 7);
+	loadOBJ("models/Single_Wheel_Left.obj", 4);
+	loadOBJ("models/Single_Wheel_Right.obj", 5);
+	loadOBJ("models/Gears_Both.obj", 6);
+	loadOBJ("models/Turret.obj", 7);
+	loadOBJ("models/Gun.obj", 8);
 	texTank[0] = readTexture("textures/bodyDark.png");
 	texTank[1] = readTexture("textures/greenMetal.png");
 	texTank[2] = readTexture("textures/bodyLight.png");
@@ -345,7 +375,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 
 //Zwolnienie zasobów zajętych przez program
 void freeOpenGLProgram(GLFWwindow* window) {
-    //************Tutaj umieszczaj kod, który należy wykonać po zakończeniu pętli głównej************
+    //kod, który należy wykonać po zakończeniu pętli głównej
 	glDeleteTextures(4, texTank);
 	glDeleteTextures(10, texTrack);
 	deletePtrs();
@@ -353,35 +383,10 @@ void freeOpenGLProgram(GLFWwindow* window) {
 	
 }
 
-
-//Procedura rysująca zawartość sceny
-void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_y, float wheel_angle, float gear_angle, float turret_angle_x, float turret_angle_y) {
-	//************Tutaj umieszczaj kod rysujący obraz******************l
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-    glm::mat4 P=glm::perspective(50.0f*PI/180.0f, aspectRatio, 0.01f, 50.0f); //Wylicz macierz rzutowania
-	glm::mat4 V = glm::lookAt(
-		glm::vec3(0, 1, -8), //kamera statyczna
-		glm::vec3(0, 0, 0),
-		glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz widoku
-	/*
-	glm::mat4 V = glm::lookAt(
-		glm::vec3(cam[3][0],cam[3][1],cam[3][2]), //kamera za wieżyczką
-		glm::vec3(center[3][0], center[3][1], center[3][2]),
-		glm::vec3(0.0f, 1.0f, 0.0f));*/
-	//center = glm::rotate(center, angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
-	//center = glm::rotate(center, angle_x, glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz modelu
-
-    sp->use();//Aktywacja programu cieniującego
-    //Przeslij parametry programu cieniującego do karty graficznej
-    glUniformMatrix4fv(sp->u("P"),1,false,glm::value_ptr(P));
-	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
-    glUniformMatrix4fv(sp->u("M"),1,false,glm::value_ptr(center));
-
+void drawHull() {
 	//Hull
-    glEnableVertexAttribArray(sp->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
-    glVertexAttribPointer(sp->a("vertex"),4,GL_FLOAT,false,0, models_vertices[0]); //Wskaż tablicę z danymi dla atrybutu vertex
+	glEnableVertexAttribArray(sp->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[0]); //Wskaż tablicę z danymi dla atrybutu vertex
 
 	glEnableVertexAttribArray(sp->a("normal"));  //Włącz przesyłanie danych do atrybutu normal
 	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, models_normals[0]); //Wskaż tablicę z danymi dla atrybutu normal
@@ -397,8 +402,10 @@ void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texTank[0]);
 
-    glDrawArrays(GL_TRIANGLES,0,vertexCount[0]); //Narysuj obiekt
+	glDrawArrays(GL_TRIANGLES, 0, vertexCount[0]); //Narysuj obiekt
+}
 
+void drawStaticPowertrain() {
 	//Static powertrain
 	glEnableVertexAttribArray(sp->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[1]); //Wskaż tablicę z danymi dla atrybutu vertex
@@ -417,7 +424,9 @@ void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_
 	glBindTexture(GL_TEXTURE_2D, texTank[1]);
 
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[1]); //Narysuj obiekt
+}
 
+void drawTracks(float wheel_angle, float tracks_speed) {
 	//Track Left
 	glEnableVertexAttribArray(sp->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[2]); //Wskaż tablicę z danymi dla atrybutu vertex
@@ -433,8 +442,9 @@ void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_
 
 	glUniform1i(sp->u("textureMap0"), 0);
 	glActiveTexture(GL_TEXTURE0);
-	
-	int texNumL = (int)(wheel_angle * 3) % 10; // Wyliczenie którą teksturą oteksturować gąsienicę aby stworzyć pozór ruchu 
+
+	int texNumL = (int)(wheel_angle * tracks_speed) % 10; // Wyliczenie którą teksturą oteksturować gąsienicę aby stworzyć pozór ruchu 
+
 	glBindTexture(GL_TEXTURE_2D, texTrack[abs(texNumL)]); // Wysłanie odpowiedniej tekstury
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[2]); //Narysuj obiekt
 
@@ -451,14 +461,13 @@ void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_
 	glEnableVertexAttribArray(sp->a("texCoord0"));
 	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, models_texCoords[3]);//an appropriate array
 
-	glUniform1i(sp->u("textureMap0"), 0);
-	glActiveTexture(GL_TEXTURE0);
-
-	int texNumR = (int)(wheel_angle * 3) % 10; // Wyliczenie którą teksturą oteksturować gąsienicę aby stworzyć pozór ruchu 
+	int texNumR = (int)(wheel_angle * tracks_speed) % 10; // Wyliczenie którą teksturą oteksturować gąsienicę aby stworzyć pozór ruchu 
 	glBindTexture(GL_TEXTURE_2D, texTrack[abs(texNumR)]); // Wysłanie odpowiedniej tekstury
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[3]); //Narysuj obiekt
+}
 
-	//Wheels
+void drawDynamicPowertrain(glm::mat4 center, float wheel_angle, float gear_angle) {
+	//Wheels Left
 	glEnableVertexAttribArray(sp->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[4]); //Wskaż tablicę z danymi dla atrybutu vertex
 
@@ -481,21 +490,21 @@ void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_
 
 	for (int i = 0; i < 7; i++)
 	{
+		//Lewa strona czołgu
 		wheel = glm::translate(center, glm::vec3(0.0f, 0.34f, zcoords[i]));
 		wheel = glm::rotate(wheel, wheel_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 		glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(wheel));
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount[4]); //Narysuj obiekt
 	}
 
+	//Lewa strona czołgu
 	wheel = glm::translate(center, glm::vec3(0.0f, 0.71f, 2.82f));
 	wheel = glm::rotate(wheel, wheel_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(wheel));
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[4]); //Narysuj obiekt
 
-	//Gears
-	glm::mat4 gears = glm::translate(center, glm::vec3(0.0f, 0.6f, -2.68f));
-	gears = glm::rotate(gears, gear_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
-	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(gears));
+
+	//Wheels Right
 	glEnableVertexAttribArray(sp->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[5]); //Wskaż tablicę z danymi dla atrybutu vertex
 
@@ -508,16 +517,26 @@ void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_
 	glEnableVertexAttribArray(sp->a("texCoord0"));
 	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, models_texCoords[5]);//an appropriate array
 
+	for (int i = 0; i < 7; i++)
+	{
+		//Prawa strona czołgu
+		wheel = glm::translate(center, glm::vec3(0.0f, 0.34f, zcoords[i]));
+		wheel = glm::rotate(wheel, wheel_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
+		glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(wheel));
+		glDrawArrays(GL_TRIANGLES, 0, vertexCount[5]); //Narysuj obiekt
+	}
+
+	//Prawa strona czołgu
+	wheel = glm::translate(center, glm::vec3(0.0f, 0.71f, 2.82f));
+	wheel = glm::rotate(wheel, wheel_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(wheel));
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[5]); //Narysuj obiekt
 
-	//Turret
-	glm::mat4 turret = glm::rotate(center, turret_angle_x, glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz modelu
-	glm::mat4 cam = glm::translate(turret, glm::vec3(0.0f, 5.0f, -10.0f));
-	
-	//turret = glm::rotate(turret, turret_angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
-	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(turret));
-	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
 
+	//Gears
+	glm::mat4 gears = glm::translate(center, glm::vec3(0.0f, 0.6f, -2.68f));
+	gears = glm::rotate(gears, gear_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(gears));
 	glEnableVertexAttribArray(sp->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[6]); //Wskaż tablicę z danymi dla atrybutu vertex
 
@@ -530,17 +549,17 @@ void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_
 	glEnableVertexAttribArray(sp->a("texCoord0"));
 	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, models_texCoords[6]);//an appropriate array
 
-	glUniform1i(sp->u("textureMap0"), 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texTank[0]);
-
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[6]); //Narysuj obiekt
+}
 
-	//Gun
-	glm::mat4 gun = glm::translate(turret, glm::vec3(0.0f, 1.81f, 2.13f));
-	gun = glm::rotate(gun, turret_angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
+void drawTurret(glm::mat4 center, glm::mat4 V, float turret_angle_x, float turret_angle_y) {
+	//Turret
+	glm::mat4 turret = glm::rotate(center, turret_angle_x, glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz modelu
+	glm::mat4 cam = glm::translate(turret, glm::vec3(0.0f, 5.0f, -10.0f));
 
-	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(gun));
+	//turret = glm::rotate(turret, turret_angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(turret));
+	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
 
 	glEnableVertexAttribArray(sp->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[7]); //Wskaż tablicę z danymi dla atrybutu vertex
@@ -554,12 +573,114 @@ void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_
 	glEnableVertexAttribArray(sp->a("texCoord0"));
 	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, models_texCoords[7]);//an appropriate array
 
+	glUniform1i(sp->u("textureMap0"), 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texTank[0]);
+
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[7]); //Narysuj obiekt
+
+	//Gun
+	glm::mat4 gun = glm::translate(turret, glm::vec3(0.0f, 1.81f, 2.13f));
+	gun = glm::rotate(gun, turret_angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
+
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(gun));
+
+	glEnableVertexAttribArray(sp->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
+	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[8]); //Wskaż tablicę z danymi dla atrybutu vertex
+
+	glEnableVertexAttribArray(sp->a("normal"));  //Włącz przesyłanie danych do atrybutu normal
+	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, models_normals[8]); //Wskaż tablicę z danymi dla atrybutu normal
+
+	glEnableVertexAttribArray(sp->a("color"));  //Włącz przesyłanie danych do atrybutu color
+	glVertexAttribPointer(sp->a("color"), 4, GL_FLOAT, false, 0, models_colors[8]); //Wskaż tablicę z danymi dla atrybutu color
+
+	glEnableVertexAttribArray(sp->a("texCoord0"));
+	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, models_texCoords[8]);//an appropriate array
+
+	glDrawArrays(GL_TRIANGLES, 0, vertexCount[8]); //Narysuj obiekt
+}
+
+glm::mat4 cameraChanger(glm::mat4 center, float turret_angle_x, float turret_angle_y) {
+	glm::mat4 V;
+	switch (camera)
+	{
+	case 1:	{
+		// kamera za wieżyczką
+		glm::mat4 M = glm::rotate(center, turret_angle_x, glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz modelu
+		V = glm::translate(M, glm::vec3(0.0f, 5.0f, -10.0f));
+		V = glm::lookAt(glm::vec3(V[3][0], V[3][1], V[3][2]), glm::vec3(center[3][0], center[3][1], center[3][2]), glm::vec3(0.0f, 1.0f, 0.0f));
+		break;
+		}
+	case 2: {
+		// kamera prawa gąsienica
+		V = glm::translate(center, glm::vec3(-2.5f, 1.5f, 2.1f));
+		glm::mat4 M = glm::translate(center, glm::vec3(0.0f, 0.0f, 10.0f));
+		V = glm::lookAt(glm::vec3(V[3][0], V[3][1], V[3][2]), glm::vec3(M[3][0], M[3][1], M[3][2]), glm::vec3(0.0f, 1.0f, 0.0f));
+		break;
+		}
+	case 3: {
+		// kamera lewa gąsienica
+		V = glm::translate(center, glm::vec3(2.5f, 1.5f, 2.1f));
+		glm::mat4 M = glm::translate(center, glm::vec3(0.0f, 0.0f, 10.0f));
+		V = glm::lookAt(glm::vec3(V[3][0], V[3][1], V[3][2]), glm::vec3(M[3][0], M[3][1], M[3][2]), glm::vec3(0.0f, 1.0f, 0.0f));
+		break;
+	}
+	case 4: {
+		// kamera przód
+		V = glm::translate(center, glm::vec3(0.0f, 1.5f, 2.1f));
+		glm::mat4 M = glm::translate(center, glm::vec3(0.0f, 0.0f, 10.0f));
+		V = glm::lookAt(glm::vec3(V[3][0], V[3][1], V[3][2]), glm::vec3(M[3][0], M[3][1], M[3][2]), glm::vec3(0.0f, 1.0f, 0.0f));
+		break;
+	}
+	case 5: {
+		// kamera wieżyczka
+		glm::mat4 M = glm::rotate(center, turret_angle_x, glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz modelu
+		M = glm::rotate(M, turret_angle_y/2, glm::vec3(1.0f, 0.0f, 0.0f));
+		V = glm::translate(M, glm::vec3(0.0f, 3.2f, 0.f));
+		M = glm::translate(M, glm::vec3(0.0f, 0.0f, 10.0f));
+		V = glm::lookAt(glm::vec3(V[3][0], V[3][1], V[3][2]), glm::vec3(M[3][0], M[3][1], M[3][2]), glm::vec3(0.0f, 1.0f, 0.0f));
+		break;
+	}
+	case 6: {
+		V = glm::translate(center, glm::vec3(0.0f, 5.0f, -10.0f));
+		V = glm::lookAt(glm::vec3(V[3][0], V[3][1], V[3][2]), glm::vec3(center[3][0], center[3][1], center[3][2]), glm::vec3(0.0f, 1.0f, 0.0f));
+		break;
+	}
+	default: {
+		V = glm::translate(center, glm::vec3(0.0f, 5.0f, -10.0f));
+		V = glm::lookAt(glm::vec3(V[3][0], V[3][1], V[3][2]), glm::vec3(center[3][0], center[3][1], center[3][2]), glm::vec3(0.0f, 1.0f, 0.0f));
+		break;
+		}
+	}
+	return V;
+}
+
+
+//Procedura rysująca zawartość sceny
+void drawScene(GLFWwindow* window, glm::mat4 center, float angle_x, float angle_y, float wheel_angle, float gear_angle, float turret_angle_x, float turret_angle_y) {
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glm::mat4 P=glm::perspective(50.0f*PI/180.0f, aspectRatio, 0.01f, 50.0f); //Wylicz macierz rzutowania
+	glm::mat4 V = cameraChanger(center, turret_angle_x, turret_angle_y);
+	
+    sp->use();//Aktywacja programu cieniującego
+    //Przeslij parametry programu cieniującego do karty graficznej
+    glUniformMatrix4fv(sp->u("P"),1,false,glm::value_ptr(P));
+	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
+    glUniformMatrix4fv(sp->u("M"),1,false,glm::value_ptr(center));
+
+	drawHull();
+	drawStaticPowertrain();
+	drawTracks(wheel_angle, 6);
+	drawDynamicPowertrain(center, wheel_angle, gear_angle);
+	drawTurret(center, V, turret_angle_x, turret_angle_y);
+
 
     glDisableVertexAttribArray(sp->a("vertex"));  //Wyłącz przesyłanie danych do atrybutu vertex
 	glDisableVertexAttribArray(sp->a("normal"));  //Wyłącz przesyłanie danych do atrybutu normal
 	glDisableVertexAttribArray(sp->a("color"));  //Wyłącz przesyłanie danych do atrybutu normal
-	glDisableVertexAttribArray(sp->a("texCoord0"));
+	glDisableVertexAttribArray(sp->a("texCoord0")); //Wyłącz przesyłanie danych do atrybutu texCoord0
 
     glfwSwapBuffers(window); //Przerzuć tylny bufor na przedni
 }
@@ -679,8 +800,12 @@ int main(void)
 		gear_speed = tank_speed / gear_radius;
 
 		turret_angle_x += turret_speed_x * time_now; //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
-        turret_angle_y+=turret_speed_y * time_now; //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
+		turret_angle_y += turret_speed_y * time_now; //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
 		wheel_angle += wheel_speed * time_now;
+		gear_angle += gear_speed * time_now;
+
+		turret_angle_x += turret_speed_x * time_now; //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
+        turret_angle_y+=turret_speed_y * time_now; //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
 		gear_angle += gear_speed * time_now;
 
 		center = glm::rotate(center, tank_turn_speed * time_now, glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz modelu
