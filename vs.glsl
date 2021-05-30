@@ -20,7 +20,7 @@ out vec2 iTexCoord0;
 //out vec2 iTexCoord1;
 
 void main(void) {
-    vec4 lp = vec4(0, 15, 15, 0); //pozcyja światła, przestrzeń świata
+    vec4 lp = M * vec4(0, 50, 0, 0); //pozcyja światła, przestrzeń świata
     l = normalize(V * lp - V*M*vertex); //wektor do światła w przestrzeni oka
     v = normalize(vec4(0, 0, 0, 1) - V * M * vertex); //wektor do obserwatora w przestrzeni oka
     n = normalize(V * M * normal); //wektor normalny w przestrzeni oka

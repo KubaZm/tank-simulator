@@ -32,7 +32,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fs.glsl" />
+    <None Include="fs_skyBox.glsl" />
+    <None Include="f_explosion.glsl" />
+    <None Include="g_explosion.glsl" />
     <None Include="vs.glsl" />
+    <None Include="vs_skyBox.glsl" />
+    <None Include="v_explosion.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

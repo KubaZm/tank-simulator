@@ -49,5 +49,20 @@
     <None Include="vs.glsl">
       <Filter>Pliki zasobów</Filter>
     </None>
+    <None Include="fs_skyBox.glsl">
+      <Filter>Pliki zasobów</Filter>
+    </None>
+    <None Include="vs_skyBox.glsl">
+      <Filter>Pliki zasobów</Filter>
+    </None>
+    <None Include="f_explosion.glsl">
+      <Filter>Pliki zasobów</Filter>
+    </None>
+    <None Include="g_explosion.glsl">
+      <Filter>Pliki zasobów</Filter>
+    </None>
+    <None Include="v_explosion.glsl">
+      <Filter>Pliki zasobów</Filter>
+    </None>
   </ItemGroup>
 </Project>
