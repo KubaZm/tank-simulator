@@ -6,7 +6,6 @@ in vec2 iTexCoord0;
 
 out vec4 pixelColor;
 
-
 void main()
 {    
     pixelColor = texture(textureMap0, iTexCoord0);

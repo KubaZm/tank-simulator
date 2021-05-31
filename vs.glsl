@@ -4,30 +4,37 @@
 uniform mat4 P;
 uniform mat4 V;
 uniform mat4 M;
+uniform vec4 lp1;
+uniform vec4 lp2;
+uniform vec4 lp3;
+uniform vec4 lp4;
+uniform vec4 lp5;
 
 //Atrybuty
-in vec4 vertex; //wspolrzedne wierzcholka w przestrzeni modelu
-in vec4 color; //kolor związany z wierzchołkiem
-in vec4 normal; //wektor normalny w przestrzeni modelu
+in vec4 vertex;
+in vec4 normal;
 in vec2 texCoord0;
 
-//Zmienne interpolowane
-out vec4 ic;
-out vec4 l;
+//Zmienna interpolowana
 out vec4 n;
 out vec4 v;
+out vec4 l1;
+out vec4 l2;
+out vec4 l3;
+out vec4 l4;
+out vec4 l5;
 out vec2 iTexCoord0;
-//out vec2 iTexCoord1;
 
 void main(void) {
-    vec4 lp = M * vec4(0, 50, 0, 0); //pozcyja światła, przestrzeń świata
-    l = normalize(V * lp - V*M*vertex); //wektor do światła w przestrzeni oka
-    v = normalize(vec4(0, 0, 0, 1) - V * M * vertex); //wektor do obserwatora w przestrzeni oka
-    n = normalize(V * M * normal); //wektor normalny w przestrzeni oka
-    
-    ic = color;
+    l1 = normalize(V*lp1 - V*M*vertex); // znormalizowany wektor l (do światła 1)
+    l2 = normalize(V*lp2 - V*M*vertex); // znormalizowany wektor l (do światła 2)
+    l3 = normalize(V*lp3 - V*M*vertex); // znormalizowany wektor l (do światła 3)
+    l4 = normalize(V*lp4 - V*M*vertex); // znormalizowany wektor l (do światła 4)
+    l5 = normalize(V*lp5 - V*M*vertex); // znormalizowany wektor l (do światła 5)
+    n = normalize(V*M*normal); // znormalizowany wektor n (wektor normalny)
+    v = normalize(vec4(0,0,0,1)-V*M*vertex); // znormalizowany wektor v (do obserwatorna)
+
     iTexCoord0 = texCoord0;
-    //iTexCoord1 = (n.xy+1)/2;
-    
+
     gl_Position=P*V*M*vertex;
 }

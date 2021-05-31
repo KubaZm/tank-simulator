@@ -23,8 +23,12 @@
 #include "myTeapot.h"
 
 // stałe
-const float cooldown = 7;
+const float cooldown = 10;
 const float tankShellSpeed = 2;
+const float max_tank_speed = 3;
+const float wheel_radius = 0.27;
+const float gear_radius = 0.34;
+const float max_tank_turn_speed = PI / 3;
 const int chunkNum = 4; // liczba renderowanych chunków = ((size*2)+1)^2 
 const int chunkSize = 32; // wielkość chunków
 
@@ -42,15 +46,11 @@ GLuint texWorld[6]; //Uchwyt – świat
 
 // zmienne globalne
 float tank_speed = 0;
-float max_tank_speed = 3;
-float wheel_radius = 0.27;
 float wheel_speed = 0;
 float max_wheel_speed = max_tank_speed / wheel_radius; //omega = v/r
-float gear_radius = 0.34;
 float gear_speed = 0;
 float max_gear_speed = max_tank_speed / gear_radius; //omega = v/r
 float tank_turn_speed = 0;
-float max_tank_turn_speed = PI / 3;
 float turret_speed_x = 0;
 float turret_speed_y = 0;
 bool w_pressed = false;
@@ -58,16 +58,27 @@ bool s_pressed = false;
 bool d_pressed = false;
 bool a_pressed = false;
 bool shot = false;
+bool explosion = false;
+float amount = 1; // do explozji i geometry shadera
 float shotCooldown = cooldown;
 float tank_acceleration_ratio = 0.05;
 unsigned int camera = 6;
+
+// współrzędne światła
+std::vector<glm::vec3> lightPos = {
+	glm::vec3(75.f, 75.f, 75.f), // główne światło 
+	glm::vec3(125.f, 50.f, 0.f), // dodatkowe światło 
+	glm::vec3(-125.f, 50.f, 0.f), // dodatkowe światło 
+	glm::vec3(0.f, 50.f, 125.f), // dodatkowe światło 
+	glm::vec3(0.f, 50.f, -125.f) // dodatkowe światło 
+};
 
 
 float speed_x = 0;
 float speed_y = 0;
 
 // tablice modelów
-static const int nr_of_models = 10;
+static const int nr_of_models = 11;
 float* models_vertices[nr_of_models];
 float* models_normals[nr_of_models];
 float* models_texCoords[nr_of_models];
@@ -351,7 +362,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glfwSetWindowSizeCallback(window,windowResizeCallback);
 	glfwSetKeyCallback(window,keyCallback);
 
-	sp=new ShaderProgram("vs.glsl",NULL,"fs.glsl");
+	sp = new ShaderProgram("vs.glsl",NULL,"fs.glsl");
 	skyBoxShader = new ShaderProgram("vs_skyBox.glsl", NULL, "fs_skyBox.glsl");
 	explosionShader = new ShaderProgram("v_explosion.glsl", "g_explosion.glsl", "f_explosion.glsl");
 
@@ -365,11 +376,12 @@ void initOpenGLProgram(GLFWwindow* window) {
 	loadOBJ("models/Turret.obj", 7);
 	loadOBJ("models/Gun.obj", 8);
 	loadOBJ("models/Tank_Shell.obj", 9);
-	texTank[0] = readTexture("textures/bodyDark.png");
-	texTank[1] = readTexture("textures/greenMetal.png");
-	texTank[2] = readTexture("textures/bodyLight.png");
-	texTank[3] = readTexture("textures/lightMetal.png");
-	texTank[4] = readTexture("textures/greenMetal2.png");
+	loadOBJ("models/Termanation.obj", 10);
+	texTank[0] = readTexture("textures/bodyLight.png");
+	texTank[1] = readTexture("textures/bodyLightSpecular.png");
+	texTank[2] = readTexture("textures/lightMetal.png");
+	texTank[3] = readTexture("textures/lightMetalSpecular.png");
+	texTank[4] = readTexture("textures/greenMetal.png");
 
 	texTrack[0] = readTexture("textures/track0.png");
 	texTrack[1] = readTexture("textures/track1.png");
@@ -406,6 +418,7 @@ void freeOpenGLProgram(GLFWwindow* window) {
 }
 
 void drawHull() {
+	sp->use();
 	//Hull
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[0]); //Wskaż tablicę z danymi dla atrybutu vertex
 	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, models_normals[0]); //Wskaż tablicę z danymi dla atrybutu normal
@@ -413,12 +426,16 @@ void drawHull() {
 
 	glUniform1i(sp->u("textureMap0"), 0);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texTank[2]);
+	glBindTexture(GL_TEXTURE_2D, texTank[0]);
+	glUniform1i(sp->u("textureMap1"), 1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texTank[1]);
 
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[0]); //Narysuj obiekt
 }
 
 void drawStaticPowertrain() {
+	sp->use();
 	//Static powertrain
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[1]); //Wskaż tablicę z danymi dla atrybutu vertex
 	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, models_normals[1]); //Wskaż tablicę z danymi dla atrybutu normal
@@ -426,12 +443,16 @@ void drawStaticPowertrain() {
 
 	glUniform1i(sp->u("textureMap0"), 0);
 	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texTank[2]);
+	glUniform1i(sp->u("textureMap1"), 1);
+	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, texTank[3]);
 
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[1]); //Narysuj obiekt
 }
 
 void drawTracks(float wheel_angle, float tracks_speed) {
+	sp->use();
 	//Track Left
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[2]); //Wskaż tablicę z danymi dla atrybutu vertex
 	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, models_normals[2]); //Wskaż tablicę z danymi dla atrybutu normal
@@ -455,7 +476,8 @@ void drawTracks(float wheel_angle, float tracks_speed) {
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[3]); //Narysuj obiekt
 }
 
-void drawDynamicPowertrain(glm::mat4 center, float wheel_angle, float gear_angle) {
+void drawDynamicPowertrain(glm::mat4 M, float wheel_angle, float gear_angle) {
+	sp->use();
 	//Wheels Left
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[4]); //Wskaż tablicę z danymi dla atrybutu vertex
 	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, models_normals[4]); //Wskaż tablicę z danymi dla atrybutu normal
@@ -463,6 +485,9 @@ void drawDynamicPowertrain(glm::mat4 center, float wheel_angle, float gear_angle
 
 	glUniform1i(sp->u("textureMap0"), 0);
 	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texTank[2]);
+	glUniform1i(sp->u("textureMap1"), 1);
+	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, texTank[3]);
 
 	float zcoords[7] = { 0.15, 0.85, 1.5, 2.13, -0.52, -1.27, -2 };
@@ -472,14 +497,14 @@ void drawDynamicPowertrain(glm::mat4 center, float wheel_angle, float gear_angle
 	for (int i = 0; i < 7; i++)
 	{
 		//Lewa strona czołgu
-		wheel = glm::translate(center, glm::vec3(0.0f, 0.34f, zcoords[i]));
+		wheel = glm::translate(M, glm::vec3(0.0f, 0.34f, zcoords[i]));
 		wheel = glm::rotate(wheel, wheel_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 		glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(wheel));
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount[4]); //Narysuj obiekt
 	}
 
 	//Lewa strona czołgu
-	wheel = glm::translate(center, glm::vec3(0.0f, 0.71f, 2.82f));
+	wheel = glm::translate(M, glm::vec3(0.0f, 0.71f, 2.82f));
 	wheel = glm::rotate(wheel, wheel_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(wheel));
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[4]); //Narysuj obiekt
@@ -492,21 +517,21 @@ void drawDynamicPowertrain(glm::mat4 center, float wheel_angle, float gear_angle
 	for (int i = 0; i < 7; i++)
 	{
 		//Prawa strona czołgu
-		wheel = glm::translate(center, glm::vec3(0.0f, 0.34f, zcoords[i]));
+		wheel = glm::translate(M, glm::vec3(0.0f, 0.34f, zcoords[i]));
 		wheel = glm::rotate(wheel, wheel_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 		glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(wheel));
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount[5]); //Narysuj obiekt
 	}
 
 	//Prawa strona czołgu
-	wheel = glm::translate(center, glm::vec3(0.0f, 0.71f, 2.82f));
+	wheel = glm::translate(M, glm::vec3(0.0f, 0.71f, 2.82f));
 	wheel = glm::rotate(wheel, wheel_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(wheel));
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[5]); //Narysuj obiekt
 
 
 	//Gears
-	glm::mat4 gears = glm::translate(center, glm::vec3(0.0f, 0.6f, -2.68f));
+	glm::mat4 gears = glm::translate(M, glm::vec3(0.0f, 0.6f, -2.68f));
 	gears = glm::rotate(gears, gear_angle, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(gears));
 
@@ -517,11 +542,11 @@ void drawDynamicPowertrain(glm::mat4 center, float wheel_angle, float gear_angle
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[6]); //Narysuj obiekt
 }
 
-void drawTurret(glm::mat4 center, glm::mat4 V, float turret_angle_x, float turret_angle_y) {
+void drawTurret(glm::mat4 M, glm::mat4 V, float turret_angle_x, float turret_angle_y, glm::vec4 lightPosition1, glm::vec4 lightPosition2, glm::vec4 lightPosition3, glm::vec4 lightPosition4, glm::vec4 lightPosition5) {
+	sp->use();
 	//Turret
-	glm::mat4 turret = glm::rotate(center, turret_angle_x, glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz modelu
+	glm::mat4 turret = glm::rotate(M, turret_angle_x, glm::vec3(0.0f, 1.0f, 0.0f)); //Wylicz macierz modelu
 
-	//turret = glm::rotate(turret, turret_angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(turret));
 	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
 
@@ -531,7 +556,10 @@ void drawTurret(glm::mat4 center, glm::mat4 V, float turret_angle_x, float turre
 
 	glUniform1i(sp->u("textureMap0"), 0);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texTank[2]);
+	glBindTexture(GL_TEXTURE_2D, texTank[0]);
+	glUniform1i(sp->u("textureMap1"), 1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texTank[1]);
 
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[7]); //Narysuj obiekt
 
@@ -539,37 +567,70 @@ void drawTurret(glm::mat4 center, glm::mat4 V, float turret_angle_x, float turre
 	glm::mat4 gun = glm::translate(turret, glm::vec3(0.0f, 1.81f, 2.13f));
 	gun = glm::rotate(gun, turret_angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 
+	// Mnożymy pozycję światła przez -1 bo wtedy działa xD
+	lightPosition1 *= -1;
+	lightPosition2 *= -1;
+	lightPosition3 *= -1;
+	lightPosition4 *= -1;
+	lightPosition5 *= -1;
+
+	glUniform4fv(sp->u("lp1"), 1, glm::value_ptr(lightPosition1));
+	glUniform4fv(sp->u("lp2"), 1, glm::value_ptr(lightPosition2));
+	glUniform4fv(sp->u("lp3"), 1, glm::value_ptr(lightPosition3));
+	glUniform4fv(sp->u("lp4"), 1, glm::value_ptr(lightPosition4));
+	glUniform4fv(sp->u("lp5"), 1, glm::value_ptr(lightPosition5));
+
 	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(gun));
 
 	glVertexAttribPointer(sp->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[8]); //Wskaż tablicę z danymi dla atrybutu vertex
 	glVertexAttribPointer(sp->a("normal"), 4, GL_FLOAT, false, 0, models_normals[8]); //Wskaż tablicę z danymi dla atrybutu normal
 	glVertexAttribPointer(sp->a("texCoord0"), 2, GL_FLOAT, false, 0, models_texCoords[8]);//an appropriate array
 
+	glUniform1i(sp->u("textureMap0"), 0);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texWorld[0]);
+	glBindTexture(GL_TEXTURE_2D, texTank[0]);
+	glUniform1i(sp->u("textureMap1"), 1);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texTank[1]);
 	glDrawArrays(GL_TRIANGLES, 0, vertexCount[8]); //Narysuj obiekt
 }
 
 void drawTankShell(glm::mat4 tankShell) {
-	if (shot == true) {
-
+	glm::vec3 position = glm::vec3(tankShell[3][0], tankShell[3][1], tankShell[3][2]);
+	if (shot == true && explosion == false) {	
+		skyBoxShader->use();
 		glUniformMatrix4fv(skyBoxShader->u("M"), 1, false, glm::value_ptr(tankShell));
-		glEnableVertexAttribArray(skyBoxShader->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
 		glVertexAttribPointer(skyBoxShader->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[9]); //Wskaż tablicę z danymi dla atrybutu vertex
-
-		glEnableVertexAttribArray(skyBoxShader->a("normal"));  //Włącz przesyłanie danych do atrybutu normal
 		glVertexAttribPointer(skyBoxShader->a("normal"), 4, GL_FLOAT, false, 0, models_normals[9]); //Wskaż tablicę z danymi dla atrybutu normal
-
-		glEnableVertexAttribArray(skyBoxShader->a("texCoord0"));
 		glVertexAttribPointer(skyBoxShader->a("texCoord0"), 2, GL_FLOAT, false, 0, models_texCoords[9]);//an appropriate array
 
+		glUniform1i(skyBoxShader->u("textureMap0"), 0);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texTank[4]);
 
 		glDrawArrays(GL_TRIANGLES, 0, vertexCount[9]); //Narysuj obiekt
+
+		if (position.y < 0.5 || shotCooldown < 2) {
+			explosion = true;
+			shotCooldown += 5;
+		}
+			
+	}
+	else if (shot == true && explosion == true) {
+		explosionShader->use();
+		tankShell = glm::scale(tankShell, glm::vec3(2.f, 2.f, 2.f));
+		glUniformMatrix4fv(explosionShader->u("M"), 1, false, glm::value_ptr(tankShell));
+		glUniform1f(explosionShader->u("amount"), amount);
+
+		glVertexAttribPointer(explosionShader->a("vertex"), 4, GL_FLOAT, false, 0, models_vertices[10]); //Wskaż tablicę z danymi dla atrybutu vertex
+
+		glDrawArrays(GL_TRIANGLES, 0, vertexCount[10]); //Narysuj obiekt
 	}
 }
 
 void drawGround(glm::vec3 Pos) {
+	skyBoxShader->use();
+
 	glEnableVertexAttribArray(skyBoxShader->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
 	glVertexAttribPointer(skyBoxShader->a("vertex"), 4, GL_FLOAT, false, 0, myCubeVertices); //Wskaż tablicę z danymi dla atrybutu vertex
 
@@ -612,6 +673,7 @@ void drawGround(glm::vec3 Pos) {
 }
 
 void drawSky(glm::vec3 Pos) {
+	skyBoxShader->use();
 
 	glm::mat4 M = glm::mat4(1.f);
 	M = glm::translate(M, Pos);
@@ -620,10 +682,7 @@ void drawSky(glm::vec3 Pos) {
 
 	glUniformMatrix4fv(skyBoxShader->u("M"), 1, false, glm::value_ptr(M));
 
-	glEnableVertexAttribArray(skyBoxShader->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
 	glVertexAttribPointer(skyBoxShader->a("vertex"), 4, GL_FLOAT, false, 0, myCubeVertices); //Wskaż tablicę z danymi dla atrybutu vertex
-
-	glEnableVertexAttribArray(skyBoxShader->a("texCoord0"));
 	glVertexAttribPointer(skyBoxShader->a("texCoord0"), 2, GL_FLOAT, false, 0, myCubeTexCoords);//an appropriate array
 
 	glUniform1i(skyBoxShader->u("textureMap0"), 0);
@@ -633,9 +692,6 @@ void drawSky(glm::vec3 Pos) {
 		glBindTexture(GL_TEXTURE_2D, texWorld[i+1]);
 		glDrawArrays(GL_TRIANGLES, 6*i, 6+(6*i)); //Narysuj obiekt
 	}
-
-	glBindTexture(GL_TEXTURE_2D, texWorld[6]);
-	glDrawArrays(GL_TRIANGLES, 24, 30); //Narysuj obiekt	
 
 	glBindTexture(GL_TEXTURE_2D, texWorld[5]);
 	glDrawArrays(GL_TRIANGLES, 30, 36); //Narysuj obiekt	
@@ -769,51 +825,69 @@ void CalculateTankSpeed()
 void drawScene(GLFWwindow* window, glm::mat4 center, glm::mat4 tankShell, float angle_x, float angle_y, float wheel_angle, float gear_angle, float turret_angle_x, float turret_angle_y, float timeStep) {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glm::vec3 position = glm::vec3(center[3][0], 0.0f, center[3][2]);
+	glm::vec3 position = glm::vec3(center[3][0], center[3][1], center[3][2]);
+	//std::cout << "x: " << position.x << "\ty: " << position.y << "\tz: " << position.z << std::endl;
 
-    glm::mat4 P = glm::perspective(50.0f*PI/180.0f, aspectRatio, 0.01f, 256.0f); //Wylicz macierz rzutowania
+	glm::vec4 lightPosition1 = glm::vec4(lightPos[0] + position, 1.f);
+	glm::vec4 lightPosition2 = glm::vec4(lightPos[1] + position, 1.f);
+	glm::vec4 lightPosition3 = glm::vec4(lightPos[2] + position, 1.f);
+	glm::vec4 lightPosition4 = glm::vec4(lightPos[3] + position, 1.f);
+	glm::vec4 lightPosition5 = glm::vec4(lightPos[4] + position, 1.f);
+
+    glm::mat4 P = glm::perspective(60.0f*PI/180.0f, aspectRatio, 0.01f, 1024.0f); //Wylicz macierz rzutowania
 	glm::mat4 V = cameraChanger(center, turret_angle_x, turret_angle_y);
-	
-	glDepthMask(GL_FALSE);
-	skyBoxShader->use();//Aktywacja programu cieniującego
-	glEnableVertexAttribArray(skyBoxShader->a("vertex"));  //Wyłącz przesyłanie danych do atrybutu vertex
-	glEnableVertexAttribArray(skyBoxShader->a("texCoord0")); //Wyłącz przesyłanie danych do atrybutu texCoord0
-	//Przeslij parametry programu cieniującego do karty graficznej
+
+	// Włączenie shaderów
+	skyBoxShader->use();
+	glEnableVertexAttribArray(skyBoxShader->a("vertex"));   //Włącz przesyłanie danych do atrybutu vertex
+	glEnableVertexAttribArray(skyBoxShader->a("texCoord0")); //Włącz przesyłanie danych do atrybutu texCoord0
 	glUniformMatrix4fv(skyBoxShader->u("P"), 1, false, glm::value_ptr(P));
 	glUniformMatrix4fv(skyBoxShader->u("V"), 1, false, glm::value_ptr(V));
+
+	// używają skyBoxShader
+	glDepthMask(GL_FALSE);
 	drawSky(position);
 	glDepthMask(GL_TRUE);
 	drawGround(position);
 
+	explosionShader->use();//Aktywacja programu cieniującego
+	glEnableVertexAttribArray(explosionShader->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
+	glUniformMatrix4fv(explosionShader->u("P"), 1, false, glm::value_ptr(P));
+	glUniformMatrix4fv(explosionShader->u("V"), 1, false, glm::value_ptr(V));
+
+	// używają skyBoxShader lub explosionShader
+	drawTankShell(tankShell);
+
+	sp->use();//Aktywacja programu cieniującego
+	glEnableVertexAttribArray(sp->a("vertex"));  //Włącz przesyłanie danych do atrybutu vertex
+	glEnableVertexAttribArray(sp->a("normal"));  //Włącz przesyłanie danych do atrybutu normal
+	glEnableVertexAttribArray(sp->a("texCoord0")); //Włącz przesyłanie danych do atrybutu texCoord0
+	glUniformMatrix4fv(sp->u("P"), 1, false, glm::value_ptr(P));
+	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(center));
+	glUniform4fv(sp->u("lp1"), 1, glm::value_ptr(lightPosition1));
+	glUniform4fv(sp->u("lp2"), 1, glm::value_ptr(lightPosition2));
+	glUniform4fv(sp->u("lp3"), 1, glm::value_ptr(lightPosition3));
+	glUniform4fv(sp->u("lp4"), 1, glm::value_ptr(lightPosition4));
+	glUniform4fv(sp->u("lp5"), 1, glm::value_ptr(lightPosition5));
+
+	// używają sp
+	drawHull();
+
+	// kolejność musi być następująca ponieważ drawTurret zmienia pozycję świateł
+	drawTurret(center, V, turret_angle_x, turret_angle_y, lightPosition1, lightPosition2, lightPosition3, lightPosition4, lightPosition5);
+	glUniformMatrix4fv(sp->u("M"), 1, false, glm::value_ptr(center));
+	drawTracks(wheel_angle, 6);
+	drawStaticPowertrain();	
+	drawDynamicPowertrain(center, wheel_angle, gear_angle);
+	
+
 	glDisableVertexAttribArray(skyBoxShader->a("vertex"));  //Wyłącz przesyłanie danych do atrybutu vertex
 	glDisableVertexAttribArray(skyBoxShader->a("texCoord0")); //Wyłącz przesyłanie danych do atrybutu texCoord0
 
-	sp->use();//Aktywacja programu cieniującego
-	glEnableVertexAttribArray(sp->a("vertex"));  //Wyłącz przesyłanie danych do atrybutu vertex
-	glEnableVertexAttribArray(sp->a("normal"));  //Wyłącz przesyłanie danych do atrybutu normal
-	glEnableVertexAttribArray(sp->a("texCoord0")); //Wyłącz przesyłanie danych do atrybutu texCoord0
+	glDisableVertexAttribArray(explosionShader->a("vertex"));
 
-	//Przeslij parametry programu cieniującego do karty graficznej
-	glUniformMatrix4fv(sp->u("P"), 1, false, glm::value_ptr(P));
-	glUniformMatrix4fv(sp->u("V"), 1, false, glm::value_ptr(V));
-    glUniformMatrix4fv(sp->u("M"),1,false,glm::value_ptr(center));
-	glUniformMatrix4fv(sp->u("Pos"), 1, false, glm::value_ptr(glm::vec4(position,1.f)));
-	
-	drawHull();
-	drawStaticPowertrain();
-	drawTracks(wheel_angle, 6);
-	drawDynamicPowertrain(center, wheel_angle, gear_angle);
-	drawTurret(center, V, turret_angle_x, turret_angle_y);
-
-	skyBoxShader->use();//Aktywacja programu cieniującego
-	//Przeslij parametry programu cieniującego do karty graficznej
-	glUniformMatrix4fv(skyBoxShader->u("P"), 1, false, glm::value_ptr(P));
-	glUniformMatrix4fv(skyBoxShader->u("V"), 1, false, glm::value_ptr(V));
-
-	drawTankShell(tankShell);
-
-
-    glDisableVertexAttribArray(sp->a("vertex"));  //Wyłącz przesyłanie danych do atrybutu vertex
+	glDisableVertexAttribArray(sp->a("vertex"));  //Wyłącz przesyłanie danych do atrybutu vertex
 	glDisableVertexAttribArray(sp->a("normal"));  //Wyłącz przesyłanie danych do atrybutu normal
 	glDisableVertexAttribArray(sp->a("texCoord0")); //Wyłącz przesyłanie danych do atrybutu texCoord0
 
@@ -832,7 +906,7 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
-	window = glfwCreateWindow(500, 500, "OpenGL", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
+	window = glfwCreateWindow(window_width, window_height, "OpenGL", NULL, NULL); 
 
 	if (!window) //Jeżeli okna nie udało się utworzyć, to zamknij program
 	{
@@ -888,8 +962,8 @@ int main(void)
 		
 		//angle_x += speed_x * time_now; //Zwiększ/zmniejsz kąt obrotu na podstawie prędkości i czasu jaki upłynał od poprzedniej klatki
 		//angle_y += speed_y * time_now;
-		if (turret_angle_y < -0.23)
-			turret_angle_y = -0.23;
+		if (turret_angle_y < -0.15)
+			turret_angle_y = -0.15;
 		else if (turret_angle_y > 0.145)
 			turret_angle_y = 0.145;
 		
@@ -900,15 +974,21 @@ int main(void)
 				tankShell = glm::translate(tankShell, glm::vec3(0.0f, 1.81f, 2.13f));
 				tankShell = glm::rotate(tankShell, turret_angle_y, glm::vec3(1.0f, 0.0f, 0.0f)); //Wylicz macierz modelu
 				tankShell = glm::translate(tankShell, glm::vec3(0.0f, 0.0f, 5.f));
+				explosion = false;
 			}
-			else if (shotCooldown <= 0) {
+			else if (shotCooldown <= 0 || amount > 4) {
 				shot = false;
+				explosion = false;
+				amount = 1;
 				shotCooldown = cooldown;
 			}
-			else {
+			else if (explosion == false) {
 				shotCooldown -= time_now;
-				tankShell = glm::rotate(tankShell, 0.0005f, glm::vec3(1.0f, 0.0f, 0.0f)); // Złudzenie grawitacji
+				tankShell = glm::rotate(tankShell, 0.001f, glm::vec3(1.0f, 0.0f, 0.0f)); // Złudzenie grawitacji
 				tankShell = glm::translate(tankShell, glm::vec3(0.0f, 0.f, tankShellSpeed)); // Przemieszczenie pocisku
+			}
+			else if (explosion == true) {
+				amount += time_now;
 			}
 		}
 

@@ -1,14 +1,35 @@
 ﻿  main_file.cpp
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: "APIENTRY": ponowna definicja makra
 Y:\VSC\tank\tank-simulator\glfw\include\GLFW\glfw3.h(123): message : zobacz poprzednią definicję „APIENTRY”
-Y:\VSC\tank\tank-simulator\main_file.cpp(46,26): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-Y:\VSC\tank\tank-simulator\main_file.cpp(49,25): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-Y:\VSC\tank\tank-simulator\main_file.cpp(62,37): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-Y:\VSC\tank\tank-simulator\main_file.cpp(205,20): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
-Y:\VSC\tank\tank-simulator\main_file.cpp(468,63): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-Y:\VSC\tank\tank-simulator\main_file.cpp(587,10): warning C4244: "inicjowanie": konwersja z "int" do "float", możliwa utrata danych
-Y:\VSC\tank\tank-simulator\main_file.cpp(588,10): warning C4244: "inicjowanie": konwersja z "int" do "float", możliwa utrata danych
-Y:\VSC\tank\tank-simulator\main_file.cpp(869,18): warning C4244: "inicjowanie": konwersja z "double" do "float", możliwa utrata danych
-Y:\VSC\tank\tank-simulator\main_file.cpp(892,26): warning C4305: "=": obcięcie z "double" do "float"
-Y:\VSC\tank\tank-simulator\main_file.cpp(894,26): warning C4305: "=": obcięcie z "double" do "float"
+Y:\VSC\tank\tank-simulator\main_file.cpp(29,32): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+Y:\VSC\tank\tank-simulator\main_file.cpp(30,31): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+Y:\VSC\tank\tank-simulator\main_file.cpp(64,37): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+Y:\VSC\tank\tank-simulator\main_file.cpp(216,20): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
+Y:\VSC\tank\tank-simulator\main_file.cpp(493,63): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+Y:\VSC\tank\tank-simulator\main_file.cpp(648,10): warning C4244: "inicjowanie": konwersja z "int" do "float", możliwa utrata danych
+Y:\VSC\tank\tank-simulator\main_file.cpp(649,10): warning C4244: "inicjowanie": konwersja z "int" do "float", możliwa utrata danych
+Y:\VSC\tank\tank-simulator\main_file.cpp(909,42): warning C4244: "argument": konwersja z "float" do "int", możliwa utrata danych
+Y:\VSC\tank\tank-simulator\main_file.cpp(909,28): warning C4244: "argument": konwersja z "float" do "int", możliwa utrata danych
+Y:\VSC\tank\tank-simulator\main_file.cpp(943,18): warning C4244: "inicjowanie": konwersja z "double" do "float", możliwa utrata danych
+Y:\VSC\tank\tank-simulator\main_file.cpp(966,26): warning C4305: "=": obcięcie z "double" do "float"
+Y:\VSC\tank\tank-simulator\main_file.cpp(968,26): warning C4305: "=": obcięcie z "double" do "float"
+Y:\VSC\tank\tank-simulator\glm\detail\type_vec4.inl(583,106): warning C4244: "argument": konwersja z "U" do "T", możliwa utrata danych
+          with
+          [
+              U=int
+          ]
+          and
+          [
+              T=float
+          ]
+Y:\VSC\tank\tank-simulator\main_file.cpp(571): message : zobacz odwołanie do kompilowanego tworzenia wystąpienia „glm::vec<4,float,glm::packed_highp> &glm::vec<4,float,glm::packed_highp>::operator *=<int>(U)” funkcji szablon
+          with
+          [
+              U=int
+          ]
+Y:\VSC\tank\tank-simulator\main_file.cpp(571): message : zobacz odwołanie do kompilowanego tworzenia wystąpienia „glm::vec<4,float,glm::packed_highp> &glm::vec<4,float,glm::packed_highp>::operator *=<int>(U)” funkcji szablon
+          with
+          [
+              U=int
+          ]
   tank-simulator.vcxproj -> Y:\VSC\tank\tank-simulator\Debug\tank-simulator.exe
