@@ -1,15 +1,15 @@
 ﻿  main_file.cpp
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.18362.0\shared\minwindef.h(130,1): warning C4005: "APIENTRY": ponowna definicja makra
-Y:\VSC\tank\tank-simulator\glfw\include\GLFW\glfw3.h(123): message : zobacz poprzednią definicję „APIENTRY”
-Y:\VSC\tank\tank-simulator\main_file.cpp(71,37): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-Y:\VSC\tank\tank-simulator\main_file.cpp(248,20): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
-Y:\VSC\tank\tank-simulator\main_file.cpp(523,63): warning C4305: "inicjowanie": obcięcie z "double" do "float"
-Y:\VSC\tank\tank-simulator\main_file.cpp(689,10): warning C4244: "inicjowanie": konwersja z "int" do "float", możliwa utrata danych
-Y:\VSC\tank\tank-simulator\main_file.cpp(690,10): warning C4244: "inicjowanie": konwersja z "int" do "float", możliwa utrata danych
-Y:\VSC\tank\tank-simulator\main_file.cpp(943,42): warning C4244: "argument": konwersja z "float" do "int", możliwa utrata danych
-Y:\VSC\tank\tank-simulator\main_file.cpp(943,28): warning C4244: "argument": konwersja z "float" do "int", możliwa utrata danych
-Y:\VSC\tank\tank-simulator\main_file.cpp(980,18): warning C4244: "inicjowanie": konwersja z "double" do "float", możliwa utrata danych
-Y:\VSC\tank\tank-simulator\glm\detail\type_vec4.inl(583,106): warning C4244: "argument": konwersja z "U" do "T", możliwa utrata danych
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\glfw\include\GLFW\glfw3.h(123): message : zobacz poprzednią definicję „APIENTRY”
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(71,37): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(245,20): warning C4018: "<": niezgodność typu ze znakiem/bez znaku
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(518,63): warning C4305: "inicjowanie": obcięcie z "double" do "float"
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(684,10): warning C4244: "inicjowanie": konwersja z "int" do "float", możliwa utrata danych
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(685,10): warning C4244: "inicjowanie": konwersja z "int" do "float", możliwa utrata danych
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(938,42): warning C4244: "argument": konwersja z "float" do "int", możliwa utrata danych
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(938,28): warning C4244: "argument": konwersja z "float" do "int", możliwa utrata danych
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(972,18): warning C4244: "inicjowanie": konwersja z "double" do "float", możliwa utrata danych
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\glm\detail\type_vec4.inl(583,106): warning C4244: "argument": konwersja z "U" do "T", możliwa utrata danych
           with
           [
               U=int
@@ -18,14 +18,14 @@ Y:\VSC\tank\tank-simulator\glm\detail\type_vec4.inl(583,106): warning C4244: "ar
           [
               T=float
           ]
-Y:\VSC\tank\tank-simulator\main_file.cpp(610): message : zobacz odwołanie do kompilowanego tworzenia wystąpienia „glm::vec<4,float,glm::packed_highp> &glm::vec<4,float,glm::packed_highp>::operator *=<int>(U)” funkcji szablon
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(605): message : zobacz odwołanie do kompilowanego tworzenia wystąpienia „glm::vec<4,float,glm::packed_highp> &glm::vec<4,float,glm::packed_highp>::operator *=<int>(U)” funkcji szablon
           with
           [
               U=int
           ]
-Y:\VSC\tank\tank-simulator\main_file.cpp(610): message : zobacz odwołanie do kompilowanego tworzenia wystąpienia „glm::vec<4,float,glm::packed_highp> &glm::vec<4,float,glm::packed_highp>::operator *=<int>(U)” funkcji szablon
+C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\main_file.cpp(605): message : zobacz odwołanie do kompilowanego tworzenia wystąpienia „glm::vec<4,float,glm::packed_highp> &glm::vec<4,float,glm::packed_highp>::operator *=<int>(U)” funkcji szablon
           with
           [
               U=int
           ]
-  tank-simulator.vcxproj -> Y:\VSC\tank\tank-simulator\Debug\tank-simulator.exe
+  tank-simulator.vcxproj -> C:\Users\kubaz\Desktop\STUDIA\SEMESTR 4\Grafika komputerowa i wizualizacja\projekt\tank-simulator\Debug\tank-simulator.exe

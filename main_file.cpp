@@ -28,7 +28,7 @@ std::normal_distribution<double> normalDistr(0.0, 2.0);
 
 
 // stałe
-const float cooldown = 10.f;
+const float cooldown = 9.f;
 const float tankShellSpeed = 2.5f;
 const float max_tank_speed = 3.f;
 const float wheel_radius = 0.27f;
@@ -37,7 +37,7 @@ const float max_tank_turn_speed = PI / 3;
 const int chunkNum = 4; // liczba renderowanych chunków = ((size*2)+1)^2 
 const int chunkSize = 32; // wielkość chunków
 const int n = 1000; //Liczba cząstek
-const float timeToLive = 4.f; // czas życia cząstki
+const float timeToLive = 8.f; // czas życia cząstki
 glm::vec3 gravity = glm::vec3(0, -1, 0); //Wektor grawitacji
 
 
@@ -80,9 +80,6 @@ std::vector<glm::vec3> lightPos = {
 	glm::vec3(0.f, 50.f, -125.f) // dodatkowe światło 
 };
 
-
-float speed_x = 0;
-float speed_y = 0;
 
 // tablice modelów
 static const int nr_of_models = 11;
@@ -301,7 +298,6 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 		if (key == GLFW_KEY_D)
 		{
-			a_pressed = false;
 			d_pressed = true;
 			if (a_pressed)
 				tank_turn_speed = 0;
@@ -312,7 +308,6 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		if (key == GLFW_KEY_A)
 		{
-			d_pressed = false;
 			a_pressed = true;
 			if (d_pressed)
 				tank_turn_speed = 0;
@@ -339,7 +334,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		if (key == GLFW_KEY_DOWN) turret_speed_y = PI / 4;
 		if (key == GLFW_KEY_SPACE && shotCooldown == cooldown) {
 			shot = true;
-			PlaySound(TEXT("sounds/tank_shot.wav"), NULL, SND_ASYNC);
+			PlaySound(TEXT("sounds/tank shot.wav"), NULL, SND_ASYNC);
 		}
 	}
 	if (action == GLFW_RELEASE) {
@@ -863,7 +858,7 @@ void CalculateTankSpeed()
 }
 
 //Procedura rysująca zawartość sceny
-void drawScene(GLFWwindow* window, glm::mat4 center, glm::mat4 tankShell, Particle* systemC, float angle_x, float angle_y, float left_wheel_angle, float right_wheel_angle, float left_gear_angle, float right_gear_angle, float turret_angle_x, float turret_angle_y, float timeStep) {
+void drawScene(GLFWwindow* window, glm::mat4 center, glm::mat4 tankShell, Particle* systemC, float left_wheel_angle, float right_wheel_angle, float left_gear_angle, float right_gear_angle, float turret_angle_x, float turret_angle_y, float timeStep) {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glm::vec3 position = glm::vec3(center[3][0], center[3][1], center[3][2]);
@@ -971,9 +966,6 @@ int main(void)
 	float left_gear_angle = 1000; //Aktualny kąt obrotu lewych zębatek
 	float right_gear_angle = 1000; //Aktualny kąt obrotu prawych zębatek
 
-	float angle_x = 0; //Aktualny kąt obrotu wieżyczki
-	float angle_y = 0; //Aktualny kąt obrotu wieżyczki
-
 	glfwSetTime(0); //Zeruj timer
 	while (!glfwWindowShouldClose(window)) //Tak długo jak okno nie powinno zostać zamknięte
 	{
@@ -1041,7 +1033,7 @@ int main(void)
 		}
 
         glfwSetTime(0); //Zeruj timer
-		drawScene(window, center, tankShell, systemC, angle_x, angle_y, left_wheel_angle, right_wheel_angle, left_gear_angle, right_gear_angle, turret_angle_x, turret_angle_y, time_now); //Wykonaj procedurę rysującą
+		drawScene(window, center, tankShell, systemC, left_wheel_angle, right_wheel_angle, left_gear_angle, right_gear_angle, turret_angle_x, turret_angle_y, time_now); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
 	}
 
