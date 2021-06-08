@@ -23,7 +23,7 @@
 
 // liczby losowe z rozkładu normalnego
 std::default_random_engine generator;
-std::normal_distribution<double> normalDistr(0.0, 2.0);
+std::normal_distribution<double> normalDistr(0.0, 1.0);
 
 
 
@@ -34,7 +34,7 @@ const float max_tank_speed = 3.f;
 const float wheel_radius = 0.27f;
 const float gear_radius = 0.34f;
 const float max_tank_turn_speed = PI / 3;
-const int chunkNum = 4; // liczba renderowanych chunków = ((size*2)+1)^2 
+const int chunkNum = 5; // liczba renderowanych chunków = ((size*2)+1)^2 
 const int chunkSize = 32; // wielkość chunków
 const int n = 1000; //Liczba cząstek
 const float timeToLive = 8.f; // czas życia cząstki
@@ -100,7 +100,7 @@ struct Particle {
 // system cząstek
 void createParticle(Particle& p, glm::vec3 pos) { //Zainicjowanie cząstki
 	p.position = pos;
-	p.speed = glm::vec3(normalDistr(generator), 5 * abs(normalDistr(generator)), normalDistr(generator));
+	p.speed = glm::vec3(normalDistr(generator), 3 * abs(normalDistr(generator)), normalDistr(generator));
 	p.ttl = timeToLive;
 }
 void initializeSystem(Particle* system, glm::vec3 pos) {//Zainicjowanie każdej cząstki
@@ -862,7 +862,6 @@ void drawScene(GLFWwindow* window, glm::mat4 center, glm::mat4 tankShell, Partic
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glm::vec3 position = glm::vec3(center[3][0], center[3][1], center[3][2]);
-	//std::cout << "x: " << position.x << "\ty: " << position.y << "\tz: " << position.z << std::endl;
 
 	glm::vec4 lightPosition1 = glm::vec4(lightPos[0] + position, 1.f);
 	glm::vec4 lightPosition2 = glm::vec4(lightPos[1] + position, 1.f);

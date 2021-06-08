@@ -32,7 +32,7 @@ void main(void) {
     l4 = normalize(V*lp4 - V*M*vertex); // znormalizowany wektor l (do światła 4)
     l5 = normalize(V*lp5 - V*M*vertex); // znormalizowany wektor l (do światła 5)
     n = normalize(V*M*normal); // znormalizowany wektor n (wektor normalny)
-    v = normalize(vec4(0,0,0,1)-V*M*vertex); // znormalizowany wektor v (do obserwatorna)
+    v = normalize(vec4(0,0,0,1)-V*M*vertex); // znormalizowany wektor v (do obserwatora)
 
     iTexCoord0 = texCoord0;
 

@@ -59,6 +59,4 @@ void main(void) {
 	pixelColor += vec4(kd.rgb * nl3, kd.a) + vec4(ks.rgb*rv3, 0);
 	pixelColor += vec4(kd.rgb * nl4, kd.a) + vec4(ks.rgb*rv4, 0);
 	pixelColor += vec4(kd.rgb * nl5, kd.a) + vec4(ks.rgb*rv5, 0);
-
-	//pixelColor = (vec4(kd.rgb * nl1, kd.a) + vec4(ks.rgb*rv1, 0)) + (vec4(kd.rgb * nl2, kd.a) + vec4(ks.rgb*rv2, 0)) + (vec4(kd.rgb * nl3, kd.a) + vec4(ks.rgb*rv3, 0));
 }
